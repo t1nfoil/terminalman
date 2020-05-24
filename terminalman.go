@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+	"strings"
 )
 
 var terminalMan = []string{
@@ -205,17 +206,33 @@ var terminalMan = []string{
 }
 
 //draws a terminal man frame
-func drawGuyAtLC(l, c, f int) {
+func drawGuyAtLC(l, c, f int, r bool) {
 
 	fs := []int{0, 20, 41, 62, 85, 108, 129, 150, 173}
 	fe := []int{18, 39, 60, 83, 105, 127, 148, 171, 192}
 	i := fs[f]
-	for y := 0; y < (21-(fe[f]-fs[f]))+(fe[f]-fs[f]); y++ {
-		cursorLoc := "\033[" + strconv.Itoa(l+y) + ";" + strconv.Itoa(c) + "f"
-		fmt.Print(cursorLoc + terminalMan[i+y])
+	if !r {
+		for y := 0; y < (21-(fe[f]-fs[f]))+(fe[f]-fs[f]); y++ {
+			cursorLoc := "\033[" + strconv.Itoa(l+y) + ";" + strconv.Itoa(c) + "f"
+			fmt.Print(cursorLoc + terminalMan[i+y])
+		}
+	} else {
+		for y := 0; y < (21-(fe[f]-fs[f]))+(fe[f]-fs[f]); y++ {
+			// reverse the string
+			tmp := terminalMan[i+y]
+			tmp = strings.TrimRight(tmp,"\n")
+			x := strings.Split(tmp,"▄")
+			var terminalManReverse string
+			for i := len(x)-1; i > 1; i-- {
+				terminalManReverse +=  x[i] + "▄"
+			}
+			terminalManReverse = terminalManReverse[1:len(terminalManReverse)] + "\033[48;2;0;0;0m\033[38;2;0;0;0m▄\033[48;2;0;0;0m\033[38;2;0;0;0m▄\n"
+			cursorLoc := "\033[" + strconv.Itoa(l+y) + ";" + strconv.Itoa(c) + "f"
+			fmt.Printf(cursorLoc + terminalManReverse)
+		}
 	}
-}
 
+}
 
 // black out the terminal
 func blk() {
@@ -229,13 +246,26 @@ func blk() {
 func main() {
 	blk()
 	f := 0
-	for x := 0; ; x += 2 {
-		time.Sleep(100 * time.Millisecond)
-		if f == 8 {
-			f = 1
-		} else {
-			f++
+	for {
+		for x := 0; x < 150; x += 2 {
+			time.Sleep(100 * time.Millisecond)
+			if f == 8 {
+				f = 1
+			} else {
+				f++
+			}
+			drawGuyAtLC(10, x, f, false)
 		}
-		drawGuyAtLC(10, x, f)
+
+		for x := 145; x > 0; x -= 2 {
+			time.Sleep(100 * time.Millisecond)
+			if f == 8 {
+				f = 1
+			} else {
+				f++
+			}
+			drawGuyAtLC(10, x, f, true)
+		}
+
 	}
 }
